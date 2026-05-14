@@ -4,61 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>专属小店</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --primary: #ff6b81;
-  --primary-dark: #e55a6e;
-  --bg: #f8f8f8;
-  --text: #333;
-  --text-light: #999;
-  --white: #fff;
-  --border: #eee;
+  --primary: #ff6b81; --primary-dark: #e55a6e; --bg: #f8f8f8;
+  --text: #333; --text-light: #999; --white: #fff; --border: #eee;
 }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
-  max-width: 450px;
-  margin: 0 auto;
-  min-height: 100vh;
-  padding-bottom: 60px;
+  background: var(--bg); color: var(--text); font-size: 14px;
+  max-width: 450px; margin: 0 auto; min-height: 100vh; padding-bottom: 60px;
   -webkit-tap-highlight-color: transparent;
 }
-
-/* Tab Bar */
-.tab-bar {
-  position: fixed; bottom: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 100%; max-width: 450px;
-  background: var(--white);
-  display: flex; border-top: 1px solid var(--border);
-  z-index: 100; padding-bottom: env(safe-area-inset-bottom);
-}
-.tab-item {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; padding: 8px 0; color: #999;
-  font-size: 11px; cursor: pointer; transition: color .2s;
-  border: none; background: none;
-}
+.tab-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 450px; background: var(--white); display: flex;
+  border-top: 1px solid var(--border); z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
+.tab-item { flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 8px 0; color: #999; font-size: 11px; cursor: pointer; transition: color .2s;
+  border: none; background: none; }
 .tab-item.active { color: var(--primary); }
 .tab-icon { font-size: 22px; margin-bottom: 2px; }
-
-/* Pages */
 .page { display: none; padding: 12px; padding-bottom: 20px; min-height: calc(100vh - 60px); }
 .page.active { display: block; }
-
-/* Category Bar */
 .cat-bar { display: flex; gap: 10px; padding: 10px 0 14px; overflow-x: auto; }
 .cat-item { display: flex; flex-direction: column; align-items: center;
   padding: 10px 18px; border-radius: 16px; background: var(--white);
-  font-size: 12px; color: #666; cursor: pointer;
-  white-space: nowrap; transition: all .2s; border: none; flex-shrink: 0; }
+  font-size: 12px; color: #666; cursor: pointer; white-space: nowrap;
+  transition: all .2s; border: none; flex-shrink: 0; }
 .cat-item.active { background: var(--primary); color: var(--white); }
 .cat-icon { font-size: 28px; margin-bottom: 4px; }
-
-/* Product Grid */
 .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .product-card { background: var(--white); border-radius: 14px; overflow: hidden;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05); cursor: pointer; }
@@ -71,8 +46,6 @@ body {
 .add-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--primary);
   color: #fff; border: none; font-size: 22px; cursor: pointer; display: flex;
   align-items: center; justify-content: center; }
-
-/* Cart */
 .cart-item { display: flex; align-items: center; background: var(--white);
   padding: 12px; border-radius: 12px; margin-bottom: 10px; }
 .cart-img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; background: #f0f0f0; flex-shrink: 0; }
@@ -85,8 +58,6 @@ body {
   align-items: center; justify-content: center; color: #666; }
 .qty-num { font-size: 15px; font-weight: 500; }
 .cart-del { color: #999; font-size: 12px; cursor: pointer; padding: 6px; border: none; background: none; }
-
-/* Bottom Bar */
 .bottom-bar { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
   width: 100%; max-width: 450px; background: var(--white); display: flex;
   align-items: center; justify-content: space-between; padding: 12px 16px;
@@ -95,8 +66,6 @@ body {
 .total-price { font-size: 22px; color: var(--primary); font-weight: bold; }
 .submit-btn { padding: 12px 36px; background: var(--primary); color: #fff;
   border: none; border-radius: 24px; font-size: 15px; cursor: pointer; }
-
-/* Order Card */
 .order-card { background: var(--white); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; }
 .order-header { display: flex; justify-content: space-between; align-items: center;
   padding-bottom: 12px; border-bottom: 1px solid #f5f5f5; margin-bottom: 10px; }
@@ -106,34 +75,24 @@ body {
 .order-item { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
 .order-total { text-align: right; font-weight: bold; color: var(--primary); font-size: 16px;
   padding-top: 10px; border-top: 1px solid #f5f5f5; }
-
-/* Admin Entry */
 .admin-entry { position: fixed; right: 16px; bottom: 80px; width: 48px; height: 48px;
   border-radius: 50%; background: rgba(0,0,0,0.5); color: #fff; border: none;
   font-size: 22px; cursor: pointer; z-index: 200; display: flex;
   align-items: center; justify-content: center; }
-
-/* Modal */
 .modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.5); z-index: 300; display: flex;
   align-items: center; justify-content: center; padding: 20px; }
 .modal { width: 100%; max-width: 400px; max-height: 85vh; overflow-y: auto;
   background: var(--white); border-radius: 20px; padding: 24px; }
-
-/* Product Detail */
 .detail-img { width: 100%; height: 280px; object-fit: cover; border-radius: 16px; background: #f0f0f0; margin-bottom: 16px; }
 .detail-name { font-size: 20px; font-weight: bold; margin-bottom: 6px; }
 .detail-cat { display: inline-block; font-size: 12px; color: var(--primary);
   background: rgba(255,107,129,0.1); padding: 2px 12px; border-radius: 10px; margin-bottom: 12px; }
 .detail-price { font-size: 26px; color: var(--primary); font-weight: bold; margin-bottom: 14px; }
 .detail-desc { font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 20px; }
-
-/* Empty & Loading */
 .empty { display: flex; flex-direction: column; align-items: center; padding-top: 120px; }
 .empty-icon { font-size: 60px; margin-bottom: 12px; color: #ccc; }
 .empty-text { color: #999; }
-
-/* Admin */
 .admin-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .admin-title { font-size: 17px; font-weight: bold; }
 .status-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
@@ -141,7 +100,6 @@ body {
 .btn-accept { background: #e6f7ff; color: #1890ff; }
 .btn-deliver { background: #f9f0ff; color: #722ed1; }
 .btn-done { background: #f6ffed; color: #52c41a; }
-
 .admin-product { display: flex; align-items: center; background: var(--white);
   padding: 12px; border-radius: 12px; margin-bottom: 10px; }
 .ap-img { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: #f0f0f0; flex-shrink: 0; }
@@ -152,7 +110,6 @@ body {
 .ap-actions { display: flex; flex-direction: column; gap: 6px; }
 .ap-actions button { padding: 6px 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 12px; cursor: pointer; background: #fff; }
 .ap-actions .btn-del { color: #ff4d4f; border-color: #ffccc7; }
-
 .form-group { margin-bottom: 14px; }
 .form-label { font-size: 13px; color: #666; display: block; margin-bottom: 6px; }
 .form-input, .form-select, .form-textarea {
@@ -165,29 +122,23 @@ body {
   border: none; border-radius: 22px; font-size: 15px; cursor: pointer; }
 .btn-secondary { flex: 1; padding: 12px; background: #f5f5f5; color: #666;
   border: none; border-radius: 22px; font-size: 15px; cursor: pointer; }
-
-/* Login */
 .login-box { text-align: center; }
 .login-icon { font-size: 50px; margin-bottom: 12px; }
 .login-title { font-size: 20px; font-weight: bold; margin-bottom: 6px; }
 .login-desc { font-size: 13px; color: #999; margin-bottom: 20px; }
-
-/* Toast */
 .toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
   background: rgba(0,0,0,0.75); color: #fff; padding: 12px 28px;
   border-radius: 20px; font-size: 14px; z-index: 999; pointer-events: none; opacity: 0;
   transition: opacity .2s; }
 .toast.show { opacity: 1; }
-
+.refresh-note { text-align: center; font-size: 11px; color: #bbb; padding: 8px; }
 button { font-family: inherit; }
 </style>
 </head>
 <body>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- Tab Bar -->
 <div class="tab-bar">
   <button class="tab-item active" data-page="shop" onclick="switchTab('shop')">
     <span class="tab-icon">🛍</span>小店
@@ -200,7 +151,6 @@ button { font-family: inherit; }
   </button>
 </div>
 
-<!-- Admin Entry (floating) -->
 <button class="admin-entry" onclick="showAdminLogin()" title="管理入口">⚙</button>
 
 <!-- ===== SHOP PAGE ===== -->
@@ -208,8 +158,7 @@ button { font-family: inherit; }
   <div class="cat-bar" id="catBar"></div>
   <div class="product-grid" id="productGrid"></div>
   <div class="empty" id="shopEmpty" style="display:none">
-    <div class="empty-icon">🛒</div>
-    <div class="empty-text">这个分类还没有商品哦</div>
+    <div class="empty-icon">🛒</div><div class="empty-text">这个分类还没有商品哦</div>
   </div>
 </div>
 
@@ -227,6 +176,7 @@ button { font-family: inherit; }
 <div class="page" id="page-orders">
   <div id="orderList"></div>
   <div class="empty" id="ordersEmpty"><div class="empty-icon">📋</div><div class="empty-text">还没有订单</div></div>
+  <div class="refresh-note">下拉可刷新</div>
 </div>
 
 <!-- ===== ADMIN ORDERS PAGE ===== -->
@@ -237,6 +187,7 @@ button { font-family: inherit; }
   </div>
   <div id="adminOrderList"></div>
   <div class="empty" id="adminOrdersEmpty"><div class="empty-icon">📋</div><div class="empty-text">暂无订单</div></div>
+  <div class="refresh-note">自动每5秒刷新</div>
   <button style="margin-top:20px;width:100%;padding:12px;border-radius:12px;border:none;background:#f5f5f5;color:#666;font-size:14px;cursor:pointer" onclick="adminLogout()">退出管理</button>
 </div>
 
@@ -293,29 +244,16 @@ button { font-family: inherit; }
 <div class="modal-mask" id="modalProductForm" style="display:none" onclick="if(event.target===this)closeModal('modalProductForm')">
   <div class="modal">
     <div style="font-size:17px;font-weight:bold;margin-bottom:16px" id="formTitle">添加商品</div>
-    <div class="form-group">
-      <label class="form-label">名称</label>
-      <input class="form-input" id="formName" placeholder="商品名称">
-    </div>
-    <div class="form-group">
-      <label class="form-label">分类</label>
+    <div class="form-group"><label class="form-label">名称</label><input class="form-input" id="formName" placeholder="商品名称"></div>
+    <div class="form-group"><label class="form-label">分类</label>
       <select class="form-select" id="formCategory">
-        <option value="drink">饮品</option>
-        <option value="snack">小吃</option>
-        <option value="emotion">情绪</option>
-        <option value="fruit">水果</option>
+        <option value="drink">饮品</option><option value="snack">小吃</option>
+        <option value="emotion">情绪</option><option value="fruit">水果</option>
       </select>
     </div>
-    <div class="form-group">
-      <label class="form-label">价格 (元)</label>
-      <input class="form-input" type="number" id="formPrice" placeholder="0.00" step="0.01">
-    </div>
-    <div class="form-group">
-      <label class="form-label">描述</label>
-      <textarea class="form-textarea" id="formDesc" placeholder="商品描述"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">图片</label>
+    <div class="form-group"><label class="form-label">价格 (元)</label><input class="form-input" type="number" id="formPrice" placeholder="0.00" step="0.01"></div>
+    <div class="form-group"><label class="form-label">描述</label><textarea class="form-textarea" id="formDesc" placeholder="商品描述"></textarea></div>
+    <div class="form-group"><label class="form-label">图片</label>
       <input type="file" accept="image/*" id="formImageInput" onchange="handleImageUpload(this)" style="display:block;margin-bottom:8px">
       <img class="img-preview" id="formImagePreview" style="display:none">
     </div>
@@ -327,14 +265,20 @@ button { font-family: inherit; }
 </div>
 
 <script>
-// ============ DATA HELPERS ============
+// ============ SUPABASE INIT ============
+const sb = supabase.createClient(
+  'https://aeredionxquqhblcqqly.supabase.co',
+  'sb_publishable_AjEsEgPCQFnj1pyLJc8lOw_0f-hf74e'
+);
+
+// ============ CONSTANTS ============
 const C = [
   { key: 'drink', label: '饮品', icon: '🥤' },
   { key: 'snack', label: '小吃', icon: '🍟' },
   { key: 'emotion', label: '情绪', icon: '💕' },
   { key: 'fruit', label: '水果', icon: '🍉' }
 ];
-const STATUS = [
+const STATUS_LIST = [
   { key: 'pending', label: '未接单', color: '#faad14' },
   { key: 'accepted', label: '已接单', color: '#1890ff' },
   { key: 'delivering', label: '配送中', color: '#722ed1' },
@@ -343,19 +287,17 @@ const STATUS = [
 const NEXT = { pending: ['accepted'], accepted: ['delivering'], delivering: ['delivered'], delivered: [] };
 
 function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 6); }
-function ls(key, val) {
-  if (val === undefined) return JSON.parse(localStorage.getItem(key) || 'null');
-  localStorage.setItem(key, JSON.stringify(val));
-}
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 1500);
 }
+function fmtTime(d) {
+  const dt = new Date(d);
+  return `${(dt.getMonth()+1).toString().padStart(2,'0')}-${dt.getDate().toString().padStart(2,'0')} ${dt.getHours().toString().padStart(2,'0')}:${dt.getMinutes().toString().padStart(2,'0')}`;
+}
 
-// Initialize
-if (!ls('products')) ls('products', []);
-if (!ls('orders')) ls('orders', []);
+// Admin password (local only)
 if (!localStorage.getItem('adminPwd')) localStorage.setItem('adminPwd', '123456');
 
 let cart = [];
@@ -363,6 +305,7 @@ let currentTab = 'shop';
 let detailProduct = null;
 let detailQty = 1;
 let isAdmin = false;
+let adminPollTimer = null;
 
 // ============ TAB SWITCHING ============
 function switchTab(tab) {
@@ -380,80 +323,84 @@ function switchTab(tab) {
     document.querySelectorAll('.tab-item')[tabMap[tab]].classList.add('active');
   }
 
+  // Stop admin poll if leaving admin pages
+  if (adminPollTimer && !['admin-orders','admin-products'].includes(tab)) {
+    clearInterval(adminPollTimer); adminPollTimer = null;
+  }
+
   if (tab === 'shop') renderShop();
   if (tab === 'cart') renderCart();
-  if (tab === 'orders') renderOrders();
-  if (tab === 'admin-orders') renderAdminOrders();
-  if (tab === 'admin-products') renderAdminProducts();
+  if (tab === 'orders') loadOrders();
+  if (tab === 'admin-orders') { loadAdminOrders(); startAdminPoll(); }
+  if (tab === 'admin-products') { loadAdminProducts(); startAdminPoll(); }
 
   document.querySelector('.admin-entry').style.display =
     ['admin-orders','admin-products'].includes(tab) ? 'none' : 'flex';
+}
+
+function startAdminPoll() {
+  if (adminPollTimer) return;
+  adminPollTimer = setInterval(() => {
+    if (currentTab === 'admin-orders') loadAdminOrders();
+    else if (currentTab === 'admin-products') loadAdminProducts();
+  }, 5000);
 }
 
 // ============ SHOP ============
 let activeCat = 'drink';
 function renderShop() {
   document.getElementById('catBar').innerHTML = C.map(c =>
-    `<button class="cat-item ${c.key === activeCat ? 'active' : ''}" onclick="setCategory('${c.key}')">
+    `<button class="cat-item ${c.key===activeCat?'active':''}" onclick="setCategory('${c.key}')">
       <span class="cat-icon">${c.icon}</span>${c.label}</button>`
   ).join('');
-  renderProducts();
+  loadProducts();
 }
-function setCategory(key) { activeCat = key; renderProducts(); }
-function renderProducts() {
-  const products = (ls('products') || []).filter(p => p.category === activeCat && p.isActive !== false);
+function setCategory(key) { activeCat = key; loadProducts(); }
+
+async function loadProducts() {
+  const { data } = await sb.from('products').select('*').eq('category', activeCat).eq('isActive', true);
+  const products = data || [];
   document.getElementById('productGrid').innerHTML = products.map(p =>
-    `<div class="product-card" onclick="showDetail('${p._id}')">
-      <img class="product-img" src="${p.image || ''}" alt="${p.name}">
+    `<div class="product-card" onclick="showDetail('${p.id}')">
+      <img class="product-img" src="${p.image||''}" alt="${p.name}">
       <div class="product-info">
         <div class="product-name">${p.name}</div>
         <div class="product-bottom">
           <span class="product-price">¥${p.price.toFixed(2)}</span>
-          <button class="add-btn" onclick="event.stopPropagation();quickAddCart('${p._id}')">+</button>
+          <button class="add-btn" onclick="event.stopPropagation();quickAddCart('${p.id}')">+</button>
         </div>
       </div>
     </div>`
   ).join('');
   document.getElementById('shopEmpty').style.display = products.length ? 'none' : 'flex';
-  document.querySelectorAll('.cat-item').forEach((el, i) => el.classList.toggle('active', C[i].key === activeCat));
+  document.querySelectorAll('.cat-item').forEach((el,i) => el.classList.toggle('active', C[i].key===activeCat));
 }
 
 // ============ PRODUCT DETAIL ============
-function showDetail(id) {
-  const p = (ls('products') || []).find(x => x._id === id);
-  if (!p) return;
-  detailProduct = p;
-  detailQty = 1;
-  document.getElementById('detailImg').src = p.image || '';
-  document.getElementById('detailName').textContent = p.name;
-  document.getElementById('detailCat').textContent = (C.find(c => c.key === p.category) || {}).label || p.category;
-  document.getElementById('detailPrice').textContent = '¥' + p.price.toFixed(2);
-  document.getElementById('detailDesc').textContent = p.description || '';
+async function showDetail(id) {
+  const { data } = await sb.from('products').select('*').eq('id', id).single();
+  if (!data) return;
+  detailProduct = data; detailQty = 1;
+  document.getElementById('detailImg').src = data.image || '';
+  document.getElementById('detailName').textContent = data.name;
+  document.getElementById('detailCat').textContent = (C.find(c=>c.key===data.category)||{}).label||data.category;
+  document.getElementById('detailPrice').textContent = '¥'+data.price.toFixed(2);
+  document.getElementById('detailDesc').textContent = data.description || '';
   document.getElementById('detailQty').textContent = '1';
   document.getElementById('modalDetail').style.display = 'flex';
 }
-function changeDetailQty(delta) {
-  detailQty = Math.max(1, detailQty + delta);
-  document.getElementById('detailQty').textContent = detailQty;
-}
-function addToCartFromDetail() {
-  if (!detailProduct) return;
-  addCartItem(detailProduct, detailQty);
-  closeModal('modalDetail');
-  toast('已加入购物车');
-}
-function buyNowFromDetail() {
-  addToCartFromDetail();
-  switchTab('cart');
-}
+function changeDetailQty(delta) { detailQty = Math.max(1, detailQty+delta); document.getElementById('detailQty').textContent = detailQty; }
+function addToCartFromDetail() { if(detailProduct){addCartItem(detailProduct, detailQty);closeModal('modalDetail');toast('已加入购物车');} }
+function buyNowFromDetail() { addToCartFromDetail(); switchTab('cart'); }
 
 // ============ CART ============
 function quickAddCart(id) {
-  const p = (ls('products') || []).find(x => x._id === id);
-  if (p) { addCartItem(p, 1); toast('已加入购物车'); updateCartBadge(); }
+  sb.from('products').select('*').eq('id', id).single().then(({ data }) => {
+    if (data) { addCartItem(data, 1); toast('已加入购物车'); updateCartBadge(); }
+  });
 }
 function addCartItem(product, qty) {
-  const idx = cart.findIndex(c => c._id === product._id);
+  const idx = cart.findIndex(c => c.id === product.id);
   if (idx >= 0) cart[idx].quantity += qty;
   else cart.push({ ...product, quantity: qty });
   updateCartBadge();
@@ -466,18 +413,17 @@ function renderCart() {
     list.innerHTML = ''; empty.style.display = 'flex'; bar.style.display = 'none';
   } else {
     empty.style.display = 'none'; bar.style.display = 'flex';
-    const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-    document.getElementById('cartTotal').textContent = '¥' + total.toFixed(2);
+    document.getElementById('cartTotal').textContent = '¥'+cart.reduce((s,i)=>s+i.price*i.quantity,0).toFixed(2);
     list.innerHTML = cart.map((item, idx) =>
       `<div class="cart-item">
-        <img class="cart-img" src="${item.image || ''}" alt="${item.name}">
+        <img class="cart-img" src="${item.image||''}" alt="${item.name}">
         <div class="cart-body">
           <div class="cart-name">${item.name}</div>
           <div class="cart-price">¥${item.price.toFixed(2)}</div>
           <div class="cart-qty">
-            <button class="qty-btn" onclick="changeCartQty(${idx}, -1)">-</button>
+            <button class="qty-btn" onclick="changeCartQty(${idx},-1)">-</button>
             <span class="qty-num">${item.quantity}</span>
-            <button class="qty-btn" onclick="changeCartQty(${idx}, 1)">+</button>
+            <button class="qty-btn" onclick="changeCartQty(${idx},1)">+</button>
           </div>
         </div>
         <button class="cart-del" onclick="removeCartItem(${idx})">删除</button>
@@ -486,46 +432,48 @@ function renderCart() {
   }
 }
 function changeCartQty(idx, delta) {
-  if (cart[idx].quantity + delta < 1) cart.splice(idx, 1);
+  if (cart[idx].quantity+delta < 1) cart.splice(idx, 1);
   else cart[idx].quantity += delta;
   updateCartBadge(); renderCart();
 }
-function removeCartItem(idx) { cart.splice(idx, 1); updateCartBadge(); renderCart(); }
+function removeCartItem(idx) { cart.splice(idx,1); updateCartBadge(); renderCart(); }
 function updateCartBadge() {
   const badge = document.getElementById('cartBadge');
   if (cart.length) { badge.style.display = 'inline'; badge.textContent = cart.length; }
   else badge.style.display = 'none';
 }
-function submitOrder() {
+
+async function submitOrder() {
   if (!cart.length) return toast('购物车为空');
-  const orders = ls('orders');
-  orders.unshift({
-    _id: genId(), items: cart.map(c => ({ productId: c._id, name: c.name,
-      price: c.price, quantity: c.quantity, category: c.category })),
-    total: cart.reduce((s, i) => s + i.price * i.quantity, 0),
-    status: 'pending', createdAt: new Date().toISOString()
-  });
-  ls('orders', orders);
-  cart = []; updateCartBadge(); renderCart();
-  toast('下单成功');
+  const order = {
+    id: genId(),
+    items: cart.map(c => ({ productId: c.id, name: c.name, price: c.price, quantity: c.quantity, category: c.category })),
+    total: cart.reduce((s,i)=>s+i.price*i.quantity,0),
+    status: 'pending',
+    created_at: new Date().toISOString()
+  };
+  const { error } = await sb.from('orders').insert(order);
+  if (error) { toast('下单失败'); console.error(error); return; }
+  cart = []; updateCartBadge(); renderCart(); toast('下单成功');
 }
 
 // ============ ORDERS ============
-function renderOrders() {
-  const orders = ls('orders');
+async function loadOrders() {
+  const { data } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+  const orders = data || [];
   const list = document.getElementById('orderList');
   const empty = document.getElementById('ordersEmpty');
   if (!orders.length) { list.innerHTML = ''; empty.style.display = 'flex'; }
   else {
     empty.style.display = 'none';
     list.innerHTML = orders.map(o => {
-      const st = STATUS.find(s => s.key === o.status) || {};
+      const st = STATUS_LIST.find(s=>s.key===o.status) || {};
       return `<div class="order-card">
         <div class="order-header">
-          <span class="order-time">${fmtTime(o.createdAt)}</span>
+          <span class="order-time">${fmtTime(o.created_at)}</span>
           <span class="order-status" style="color:${st.color}">${st.label}</span>
         </div>
-        <div class="order-items">${o.items.map(i =>
+        <div class="order-items">${(o.items||[]).map(i =>
           `<div class="order-item"><span>${i.name} x${i.quantity}</span><span>¥${(i.price*i.quantity).toFixed(2)}</span></div>`
         ).join('')}</div>
         <div class="order-total">合计：¥${o.total.toFixed(2)}</div>
@@ -533,67 +481,60 @@ function renderOrders() {
     }).join('');
   }
 }
-function fmtTime(d) {
-  const dt = new Date(d);
-  return `${(dt.getMonth()+1).toString().padStart(2,'0')}-${dt.getDate().toString().padStart(2,'0')} ${dt.getHours().toString().padStart(2,'0')}:${dt.getMinutes().toString().padStart(2,'0')}`;
-}
 
 // ============ ADMIN LOGIN ============
-function showAdminLogin() {
-  document.getElementById('modalLogin').style.display = 'flex';
-  document.getElementById('loginPassword').value = '';
-}
+function showAdminLogin() { document.getElementById('modalLogin').style.display = 'flex'; document.getElementById('loginPassword').value = ''; }
 function adminLogin() {
   const pwd = document.getElementById('loginPassword').value;
-  if (pwd === localStorage.getItem('adminPwd')) {
-    isAdmin = true; closeModal('modalLogin'); switchTab('admin-orders');
-  } else {
-    toast('密码错误');
-  }
+  if (pwd === localStorage.getItem('adminPwd')) { isAdmin = true; closeModal('modalLogin'); switchTab('admin-orders'); }
+  else toast('密码错误');
 }
 function adminLogout() { isAdmin = false; switchTab('shop'); }
 
 // ============ ADMIN ORDERS ============
-function renderAdminOrders() {
+async function loadAdminOrders() {
   if (!isAdmin) return;
-  const orders = ls('orders');
+  const { data } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+  const orders = data || [];
   const list = document.getElementById('adminOrderList');
   const empty = document.getElementById('adminOrdersEmpty');
   if (!orders.length) { list.innerHTML = ''; empty.style.display = 'flex'; }
   else {
     empty.style.display = 'none';
     list.innerHTML = orders.map(o => {
-      const st = STATUS.find(s => s.key === o.status) || {};
+      const st = STATUS_LIST.find(s=>s.key===o.status) || {};
       const nexts = NEXT[o.status] || [];
       return `<div class="order-card">
         <div class="order-header">
-          <span class="order-time">${fmtTime(o.createdAt)}</span>
+          <span class="order-time">${fmtTime(o.created_at)}</span>
           <span class="order-status" style="color:${st.color}">${st.label}</span>
         </div>
-        <div class="order-items">${o.items.map(i =>
+        <div class="order-items">${(o.items||[]).map(i =>
           `<div class="order-item"><span>[${i.category}] ${i.name} x${i.quantity}</span><span>¥${(i.price*i.quantity).toFixed(2)}</span></div>`
         ).join('')}</div>
         <div class="order-total">合计：¥${o.total.toFixed(2)}</div>
-        ${nexts.length ? `<div class="status-btns">${nexts.map(ns => {
-          const cls = ns === 'accepted' ? 'btn-accept' : ns === 'delivering' ? 'btn-deliver' : 'btn-done';
-          const label = ns === 'accepted' ? '接单' : ns === 'delivering' ? '配送中' : '已送达';
-          return `<button class="status-btn ${cls}" onclick="changeOrderStatus('${o._id}','${ns}')">${label}</button>`;
-        }).join('')}</div>` : ''}
+        ${nexts.length?`<div class="status-btns">${nexts.map(ns=>{
+          const cls = ns==='accepted'?'btn-accept':ns==='delivering'?'btn-deliver':'btn-done';
+          const label = ns==='accepted'?'接单':ns==='delivering'?'配送中':'已送达';
+          return `<button class="status-btn ${cls}" onclick="changeOrderStatus('${o.id}','${ns}')">${label}</button>`;
+        }).join('')}</div>`:''}
       </div>`;
     }).join('');
   }
 }
-function changeOrderStatus(id, newStatus) {
-  const orders = ls('orders');
-  const o = orders.find(x => x._id === id);
-  if (o) { o.status = newStatus; ls('orders', orders); toast('状态已更新'); renderAdminOrders(); }
+async function changeOrderStatus(id, newStatus) {
+  const { error } = await sb.from('orders').update({ status: newStatus }).eq('id', id);
+  if (error) { toast('更新失败'); return; }
+  toast('状态已更新');
+  loadAdminOrders();
 }
 
 // ============ ADMIN PRODUCTS ============
 let editingId = null;
-function renderAdminProducts() {
+async function loadAdminProducts() {
   if (!isAdmin) return;
-  const products = ls('products');
+  const { data } = await sb.from('products').select('*').order('created_at', { ascending: false });
+  const products = data || [];
   const list = document.getElementById('adminProductList');
   const empty = document.getElementById('adminProductsEmpty');
   if (!products.length) { list.innerHTML = ''; empty.style.display = 'flex'; }
@@ -601,15 +542,15 @@ function renderAdminProducts() {
     empty.style.display = 'none';
     list.innerHTML = products.map(p =>
       `<div class="admin-product">
-        <img class="ap-img" src="${p.image || ''}" alt="${p.name}">
+        <img class="ap-img" src="${p.image||''}" alt="${p.name}">
         <div class="ap-info">
           <div class="ap-name">${p.name}</div>
-          <div class="ap-meta">${(C.find(c=>c.key===p.category)||{}).label||p.category} · ${p.isActive !== false ? '上架' : '下架'}</div>
+          <div class="ap-meta">${(C.find(c=>c.key===p.category)||{}).label||p.category} · ${p.isActive!==false?'上架':'下架'}</div>
           <div class="ap-price">¥${p.price.toFixed(2)}</div>
         </div>
         <div class="ap-actions">
-          <button onclick="editProduct('${p._id}')">编辑</button>
-          <button class="btn-del" onclick="deleteProduct('${p._id}')">删除</button>
+          <button onclick="editProduct('${p.id}')">编辑</button>
+          <button class="btn-del" onclick="deleteProduct('${p.id}')">删除</button>
         </div>
       </div>`
     ).join('');
@@ -626,21 +567,17 @@ function openProductForm() {
   document.getElementById('formImageInput').value = '';
   document.getElementById('modalProductForm').style.display = 'flex';
 }
-function editProduct(id) {
-  const p = (ls('products') || []).find(x => x._id === id);
-  if (!p) return;
+async function editProduct(id) {
+  const { data } = await sb.from('products').select('*').eq('id', id).single();
+  if (!data) return;
   editingId = id;
   document.getElementById('formTitle').textContent = '编辑商品';
-  document.getElementById('formName').value = p.name;
-  document.getElementById('formCategory').value = p.category;
-  document.getElementById('formPrice').value = p.price;
-  document.getElementById('formDesc').value = p.description || '';
-  if (p.image) {
-    document.getElementById('formImagePreview').src = p.image;
-    document.getElementById('formImagePreview').style.display = 'block';
-  } else {
-    document.getElementById('formImagePreview').style.display = 'none';
-  }
+  document.getElementById('formName').value = data.name;
+  document.getElementById('formCategory').value = data.category;
+  document.getElementById('formPrice').value = data.price;
+  document.getElementById('formDesc').value = data.description || '';
+  if (data.image) { document.getElementById('formImagePreview').src = data.image; document.getElementById('formImagePreview').style.display = 'block'; }
+  else { document.getElementById('formImagePreview').style.display = 'none'; }
   document.getElementById('modalProductForm').style.display = 'flex';
 }
 function handleImageUpload(input) {
@@ -653,34 +590,32 @@ function handleImageUpload(input) {
   };
   reader.readAsDataURL(file);
 }
-function saveProduct() {
+async function saveProduct() {
   const name = document.getElementById('formName').value.trim();
   const price = parseFloat(document.getElementById('formPrice').value);
   if (!name || isNaN(price)) return toast('请填写名称和价格');
-  const data = {
+  const productData = {
     name, price,
     category: document.getElementById('formCategory').value,
     description: document.getElementById('formDesc').value.trim(),
     image: document.getElementById('formImagePreview').src || '',
     isActive: true
   };
-  const products = ls('products');
+
   if (editingId) {
-    const idx = products.findIndex(p => p._id === editingId);
-    if (idx >= 0) products[idx] = { ...products[idx], ...data };
+    await sb.from('products').update(productData).eq('id', editingId);
   } else {
-    products.push({ _id: genId(), ...data });
+    await sb.from('products').insert({ id: genId(), ...productData, created_at: new Date().toISOString() });
   }
-  ls('products', products);
   closeModal('modalProductForm');
   toast('保存成功');
-  renderAdminProducts();
+  loadAdminProducts();
 }
-function deleteProduct(id) {
+async function deleteProduct(id) {
   if (!confirm('确认删除？')) return;
-  ls('products', (ls('products') || []).filter(p => p._id !== id));
+  await sb.from('products').delete().eq('id', id);
   toast('已删除');
-  renderAdminProducts();
+  loadAdminProducts();
 }
 
 // ============ MODAL ============
