@@ -6,8 +6,6 @@
 <title>🦫 水豚噜噜小店</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --brown: #c4956a; --brown-dark: #a0764a; --caramel: #e8c9a0;
@@ -17,7 +15,7 @@
   --shadow: 0 2px 16px rgba(139, 109, 82, 0.08);
 }
 body {
-  font-family: 'Noto Sans SC', -apple-system, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   background: #fef8f2; background-image:
     radial-gradient(ellipse at 20% 10%, rgba(244,162,97,0.06) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 90%, rgba(196,149,106,0.05) 0%, transparent 50%);
@@ -326,11 +324,14 @@ img { max-width: 100%; }
 
 <!-- ===== ADMIN ORDERS ===== -->
 <div class="page" id="page-admin-orders">
-  <div class="admin-bar"><span class="admin-title">📋 订单管理</span><button style="padding:8px 16px;border-radius:14px;border:2px solid var(--caramel);background:#fff;color:var(--brown);cursor:pointer;font-size:12px;font-weight:600" onclick="switchTab('admin-products')">管理商品</button></div>
+  <div class="admin-bar"><span class="admin-title">📋 订单管理 <span id="adminOrderCount" style="font-size:13px;color:var(--text-light);font-weight:400"></span></span><button style="padding:8px 16px;border-radius:14px;border:2px solid var(--caramel);background:#fff;color:var(--brown);cursor:pointer;font-size:12px;font-weight:600" onclick="switchTab('admin-products')">管理商品</button></div>
   <div id="adminOrderList"></div>
   <div class="empty" id="adminOrdersEmpty"><div class="empty-icon">🦫</div><div class="empty-text">暂无订单，噜 ~</div></div>
   <div class="refresh-note">每 5 秒自动刷新</div>
-  <button style="margin-top:20px;width:100%;padding:12px;border-radius:16px;border:none;background:#f5f0ea;color:var(--text-light);font-size:14px;font-weight:500;cursor:pointer" onclick="adminLogout()">退出管理</button>
+  <div style="display:flex;gap:10px;margin-top:12px">
+    <button style="flex:1;padding:12px;border-radius:16px;border:none;background:#f5f0ea;color:var(--text-light);font-size:14px;font-weight:500;cursor:pointer" onclick="showChangePwd()">🔑 改密码</button>
+    <button style="flex:1;padding:12px;border-radius:16px;border:none;background:#f5f0ea;color:var(--text-light);font-size:14px;font-weight:500;cursor:pointer" onclick="adminLogout()">退出管理</button>
+  </div>
 </div>
 
 <!-- ===== ADMIN PRODUCTS ===== -->
@@ -353,7 +354,8 @@ img { max-width: 100%; }
 </div>
 
 <div class="modal-mask" id="modalDetail" style="display:none" onclick="if(event.target===this)closeModal('modalDetail')">
-  <div class="modal">
+  <div class="modal" style="position:relative">
+    <button onclick="closeModal('modalDetail')" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;border:none;background:#f0e8dc;color:var(--text-light);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1">✕</button>
     <div class="detail-img-box" id="detailImgBox"><span class="detail-emoji" id="detailEmoji"></span></div>
     <div class="detail-name" id="detailName"></div>
     <div class="detail-cat" id="detailCat"></div>
@@ -474,8 +476,8 @@ async function loadProducts(){
 
 async function seedProducts(){
   const items=SAMPLE_PRODUCTS.map(p=>({id:genId(),...p,isActive:true,image:'',created_at:new Date().toISOString()}));
-  for(const item of items){await sb.from('products').insert(item);}
-  toast('🎉 已添加水豚精选商品');
+  const{error}=await sb.from('products').insert(items);
+  if(!error) toast('🎉 已添加水豚精选商品');
 }
 
 // ============ PRODUCT DETAIL ============
@@ -536,6 +538,7 @@ function adminLogout(){isAdmin=false;switchTab('shop');}
 async function loadAdminOrders(){
   if(!isAdmin)return;const{data}=await sb.from('orders').select('*').order('created_at',{ascending:false});const orders=data||[];
   const list=document.getElementById('adminOrderList'),empty=document.getElementById('adminOrdersEmpty');
+  document.getElementById('adminOrderCount').textContent=orders.length?`（共 ${orders.length} 单）`:'';
   if(!orders.length){list.innerHTML='';empty.style.display='flex';}else{empty.style.display='none';
     list.innerHTML=orders.map(o=>{const st=STATUS_LIST.find(s=>s.key===o.status)||{},nexts=NEXT[o.status]||[];
       return`<div class="order-card"><div class="order-header"><span class="order-time">${fmtTime(o.created_at)}</span><span class="order-status ${st.cls||''}">${st.label}</span></div><div class="order-items">${(o.items||[]).map(i=>`<div class="order-item"><span>【${(C.find(c=>c.key===i.category)||{}).label||i.category}】 ${i.name} ×${i.quantity}</span><span>¥${(i.price*i.quantity).toFixed(2)}</span></div>`).join('')}</div><div class="order-total">合计 ¥${o.total.toFixed(2)}</div>
@@ -547,7 +550,7 @@ async function loadAdminProducts(){
   if(!isAdmin)return;const{data}=await sb.from('products').select('*').order('created_at',{ascending:false});const products=data||[];
   const list=document.getElementById('adminProductList'),empty=document.getElementById('adminProductsEmpty');
   if(!products.length){list.innerHTML='';empty.style.display='flex';}else{empty.style.display='none';
-    list.innerHTML=products.map(p=>`<div class="admin-product"><div class="ap-img-box ${p.category}"><span style="font-size:28px">${p.emoji||catEmoji(p.category)}</span></div><div class="ap-info"><div class="ap-name">${p.name}</div><div class="ap-meta">${(C.find(c=>c.key===p.category)||{}).label||p.category} · ${p.isActive!==false?'上架中':'已下架'}</div><div class="ap-price">${p.price.toFixed(2)}</div></div><div class="ap-actions"><button onclick="editProduct('${p.id}')">编辑</button><button class="btn-del" onclick="deleteProduct('${p.id}')">删除</button></div></div>`).join('');}
+    list.innerHTML=products.map(p=>`<div class="admin-product"><div class="ap-img-box ${p.category}"><span style="font-size:28px">${p.emoji||catEmoji(p.category)}</span></div><div class="ap-info"><div class="ap-name">${p.name}</div><div class="ap-meta">${(C.find(c=>c.key===p.category)||{}).label||p.category} · <span style="color:${p.isActive!==false?'#8db580':'#e88'};font-weight:600">${p.isActive!==false?'上架中':'已下架'}</span></div><div class="ap-price">${p.price.toFixed(2)}</div></div><div class="ap-actions"><button onclick="editProduct('${p.id}')">编辑</button><button style="color:${p.isActive!==false?'#e88':'#8db580'};border-color:${p.isActive!==false?'#ffd8d0':'#d0e8d0'}" onclick="toggleProduct('${p.id}')">${p.isActive!==false?'下架':'上架'}</button><button class="btn-del" onclick="deleteProduct('${p.id}')">删除</button></div></div>`).join('');}
 }
 let editingId=null;
 function openProductForm(){editingId=null;document.getElementById('formTitle').textContent='添加商品';document.getElementById('formName').value='';document.getElementById('formCategory').value='drink';document.getElementById('formPrice').value='';document.getElementById('formDesc').value='';document.getElementById('formEmoji').value='';document.getElementById('formImagePreview').style.display='none';document.getElementById('formImageInput').value='';document.getElementById('modalProductForm').style.display='flex';}
@@ -557,12 +560,33 @@ async function saveProduct(){
   const name=document.getElementById('formName').value.trim(),price=parseFloat(document.getElementById('formPrice').value);
   if(!name||isNaN(price))return toast('请填写名称和价格');
   const emoji=document.getElementById('formEmoji').value.trim();
-  const productData={name,price,category:document.getElementById('formCategory').value,description:document.getElementById('formDesc').value.trim(),emoji:emoji||null,image:document.getElementById('formImagePreview').src||'',isActive:true};
-  if(editingId){await sb.from('products').update(productData).eq('id',editingId);}else{await sb.from('products').insert({id:genId(),...productData,created_at:new Date().toISOString()});}
+  const baseData={name,price,category:document.getElementById('formCategory').value,description:document.getElementById('formDesc').value.trim(),emoji:emoji||null,image:document.getElementById('formImagePreview').src||''};
+  if(editingId){await sb.from('products').update(baseData).eq('id',editingId);}else{await sb.from('products').insert({id:genId(),...baseData,isActive:true,created_at:new Date().toISOString()});}
   closeModal('modalProductForm');toast('保存成功 🦫');loadAdminProducts();
 }
 async function deleteProduct(id){if(!confirm('确认删除这个商品吗？'))return;await sb.from('products').delete().eq('id',id);toast('已删除');loadAdminProducts();}
 function closeModal(id){document.getElementById(id).style.display='none';}
+async function toggleProduct(id){const{data}=await sb.from('products').select('isActive').eq('id',id).single();if(!data)return;const newVal=!(data.isActive!==false);await sb.from('products').update({isActive:newVal}).eq('id',id);toast(newVal?'已上架':'已下架');loadAdminProducts();}
+
+// ============ CHANGE PASSWORD ============
+function showChangePwd(){
+  const div=document.createElement('div');
+  div.className='modal-mask'; div.style.display='flex'; div.id='modalChangePwd';
+  div.onclick=function(e){if(e.target===this)this.remove();};
+  div.innerHTML=`<div class="modal"><div style="font-size:18px;font-weight:700;margin-bottom:16px;color:var(--brown-dark)">🔑 修改管理密码</div>
+    <div class="form-group"><label class="form-label">旧密码</label><input class="form-input" type="password" id="oldPwd" placeholder="输入旧密码"></div>
+    <div class="form-group"><label class="form-label">新密码</label><input class="form-input" type="password" id="newPwd" placeholder="输入新密码"></div>
+    <div class="form-group"><label class="form-label">确认新密码</label><input class="form-input" type="password" id="confirmPwd" placeholder="再次输入新密码"></div>
+    <div class="btn-row"><button class="btn-secondary" onclick="document.getElementById('modalChangePwd').remove()">取消</button><button class="btn-primary" onclick="doChangePwd()">确认修改</button></div></div>`;
+  document.body.appendChild(div);
+}
+function doChangePwd(){
+  const oldPwd=document.getElementById('oldPwd').value,newPwd=document.getElementById('newPwd').value,confirmPwd=document.getElementById('confirmPwd').value;
+  if(oldPwd!==localStorage.getItem('adminPwd'))return toast('旧密码错误');
+  if(!newPwd||newPwd.length<3)return toast('新密码至少3位');
+  if(newPwd!==confirmPwd)return toast('两次密码不一致');
+  localStorage.setItem('adminPwd',newPwd);document.getElementById('modalChangePwd').remove();toast('密码已修改 🦫');
+}
 
 // ============ INIT ============
 renderShop();
